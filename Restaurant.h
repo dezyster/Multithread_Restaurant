@@ -11,10 +11,13 @@
 
 class Restaurant
 {
+public:
     int ordersToCookCount = 0;
     int ordersToServeCount = 0;
     int newOrdersCount = 0;
     bool isRestaurantClosed = false;
+
+    int totalOrders = 0;
 
     Timer restaurantClock;
 
@@ -27,20 +30,9 @@ class Restaurant
     std::mutex isRestaurantClosedMutex;
     std::mutex coutMutex;
 
-    int tookedNewOrderCount = 0;
-    int cookedCount = 0;
-    int servedCount = 0;
-
-    bool isNeededToWork();
-
-    std::string getCurrentTime();
-
-public:
-
     Restaurant(): restaurantClock{}{}
 
-    void workAsChef(const char[]);
-    void workAsWaiter(const char[]);
+    std::string getCurrentTime();
 
     void addOrders(int);
     void addOrder();
