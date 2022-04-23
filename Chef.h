@@ -8,6 +8,10 @@ class ChefWork: public BaseWorker
 
     virtual bool isNeededToWork() override;
 
+    int startCoockingAndGetOrderNum(const char[]);
+    void coock();
+    void finishCoocking(const char[], int);
+
 public:
     ChefWork(Restaurant &rest):BaseWorker(rest) {}
 
@@ -18,17 +22,38 @@ extern int getRandomNumber(int min, int max);
 
 bool ChefWork::isNeededToWork()
 {
+    if(!(checkIfRestaurantIsClosed()))
     {
-        std::lock_guard<std::mutex> isRestaurantClosedUniqueLock(m_rest.isRestaurantClosedMutex);
-        if(!m_rest.isRestaurantClosed)
-        {
-            return true;
-        }
+        return true;
     }
 
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.coutMutex);
 
     return cookedCountNum != m_rest.totalOrders;
+}
+
+int ChefWork::startCoockingAndGetOrderNum(const char chefName[])
+{
+    const auto &currentTime = m_rest.getCurrentTime();
+
+    std::lock_guard<std::mutex> coutUniqueLock(m_rest.coutMutex);
+    std::cout << currentTime << ": " << chefName << " started cooking order num. " << ++cookedCountNum << "!" << std::endl;
+
+    return cookedCountNum;
+}
+
+void ChefWork::coock()
+{
+    std::lock_guard<std::mutex> ordersToServeUniqueLock(m_rest.ordersToServeMutex);
+    m_rest.ordersToServeCount++;
+}
+
+void ChefWork::finishCoocking(const char chefName[], int cookingOrderNum)
+{
+    const auto &currentTime = m_rest.getCurrentTime();
+
+    std::lock_guard<std::mutex> coutUniqueLock(m_rest.coutMutex);
+    std::cout << currentTime << ": " << chefName << " cooked an order num. " << cookingOrderNum << "!" << std::endl;
 }
 
 void ChefWork::work(const char chefName[])
@@ -48,30 +73,13 @@ void ChefWork::work(const char chefName[])
             m_rest.ordersToCookCount--;
             ordersToCookUniqueLock.unlock();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,5000)));
-            std::string currentTime = m_rest.getCurrentTime();
-
-            int cookingOrderNum;
-
-            {
-                std::lock_guard<std::mutex> coutUniqueLock(m_rest.coutMutex);
-                std::cout << currentTime << ": " << chefName << " started cooking order! " << ++cookedCountNum << std::endl;
-                cookingOrderNum = cookedCountNum;
-            }
+            int cookingOrderNum{ startCoockingAndGetOrderNum(chefName) };
 
             std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,5000)));
 
-            {
-                std::lock_guard<std::mutex> ordersToServeUniqueLock(m_rest.ordersToServeMutex);
-                m_rest.ordersToServeCount++;
-            }
+            coock();
 
-            currentTime = m_rest.getCurrentTime();
-
-            {
-                std::lock_guard<std::mutex> coutUniqueLock(m_rest.coutMutex);
-                std::cout << currentTime << ": " << chefName << " cooked an order! " << cookingOrderNum << std::endl;
-            }
+            finishCoocking(chefName, cookingOrderNum);
 
             m_rest.waiterWaitingLine.notify_one();
 

@@ -51,7 +51,7 @@ int main()
     while(workTimer.elapsed() < 30)
     {
         restaurant.addOrders(getRandomNumber(1, 3));
-        std::this_thread::sleep_for(std::chrono::seconds(getRandomNumber(3, 10)));
+        std::this_thread::sleep_for(std::chrono::seconds(getRandomNumber(5, 10)));
     }
 
     restaurant.closeRestaurant();
