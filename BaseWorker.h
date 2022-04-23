@@ -10,6 +10,7 @@ protected:
     bool checkIfRestaurantIsClosed();
 
     virtual bool isNeededToWork() = 0;
+    virtual void goToWaitingLine(std::unique_lock<std::mutex>&) = 0;
 
 public:
 
@@ -17,9 +18,3 @@ public:
 
     virtual void work(const char[]) = 0;
 };
-
-bool BaseWorker::checkIfRestaurantIsClosed()
-{
-    std::lock_guard<std::mutex> isRestaurantClosedUniqueLock(m_rest.isRestaurantClosedMutex);
-    return m_rest.isRestaurantClosed;
-}

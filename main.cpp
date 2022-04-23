@@ -1,5 +1,6 @@
 #include <conio.h>
 #include <random>
+#include <vector>
 
 #include "Restaurant.h"
 #include "Waiter.h"
@@ -25,6 +26,19 @@ void resetRandom()
     }
 }
 
+void openRestaurant(Restaurant &restaurant, int timer)
+{
+    Timer workTimer;
+
+    while(workTimer.elapsed() < timer)
+    {
+        restaurant.addOrders(getRandomNumber(1, 3));
+        std::this_thread::sleep_for(std::chrono::seconds(getRandomNumber(5, 10)));
+    }
+
+    restaurant.closeRestaurant();
+}
+
 int main()
 {
     srand(static_cast<unsigned int>(time(0)));
@@ -46,15 +60,7 @@ int main()
     std::thread waiter3(&WaiterWork::work, std::ref(waiterWork), "Waiter3");
     std::thread waiter4(&WaiterWork::work, std::ref(waiterWork), "Waiter4");
 
-    Timer workTimer;
-
-    while(workTimer.elapsed() < 30)
-    {
-        restaurant.addOrders(getRandomNumber(1, 3));
-        std::this_thread::sleep_for(std::chrono::seconds(getRandomNumber(5, 10)));
-    }
-
-    restaurant.closeRestaurant();
+    openRestaurant(restaurant, 30);
 
     chef1.join();
     chef2.join();
@@ -62,6 +68,9 @@ int main()
     waiter2.join();
     waiter3.join();
     waiter4.join();
+
+    std::cout << "Restaurant processed " << restaurant.totalOrders << " orders in "
+              << restaurant.getCurrentTime() << " seconds";
 
     return 0;
 }
