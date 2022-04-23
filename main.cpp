@@ -1,8 +1,16 @@
 #include <conio.h>
+#include <random>
 
 #include "Restaurant.h"
+#include "Waiter.h"
+#include "Chef.h"
 
-extern int getRandomNumber(int min, int max);
+int getRandomNumber(int min, int max)
+{
+    static std::mt19937 generator;
+    std::uniform_int_distribution<int> distribution(min,max);
+    return distribution(generator);
+}
 
 void resetRandom()
 {
@@ -26,16 +34,21 @@ int main()
 
     Restaurant restaurant;
 
-    std::thread chef1(&Restaurant::workAsChef, std::ref(restaurant), "Chef1");
-    std::thread chef2(&Restaurant::workAsChef, std::ref(restaurant), "Chef2");
-    std::thread waiter1(&Restaurant::workAsWaiter, std::ref(restaurant), "Waiter1");
-    std::thread waiter2(&Restaurant::workAsWaiter, std::ref(restaurant), "Waiter2");
-    std::thread waiter3(&Restaurant::workAsWaiter, std::ref(restaurant), "Waiter3");
-    std::thread waiter4(&Restaurant::workAsWaiter, std::ref(restaurant), "Waiter4");
+    ChefWork chefWork(restaurant);
+
+    std::thread chef1(&ChefWork::work, std::ref(chefWork), "Chef1");
+    std::thread chef2(&ChefWork::work, std::ref(chefWork), "Chef2");
+
+    WaiterWork waiterWork(restaurant);
+
+    std::thread waiter1(&WaiterWork::work, std::ref(waiterWork), "Waiter1");
+    std::thread waiter2(&WaiterWork::work, std::ref(waiterWork), "Waiter2");
+    std::thread waiter3(&WaiterWork::work, std::ref(waiterWork), "Waiter3");
+    std::thread waiter4(&WaiterWork::work, std::ref(waiterWork), "Waiter4");
 
     Timer workTimer;
 
-    while(workTimer.elapsed() < 60)
+    while(workTimer.elapsed() < 30)
     {
         restaurant.addOrders(getRandomNumber(1, 3));
         std::this_thread::sleep_for(std::chrono::seconds(getRandomNumber(3, 10)));
