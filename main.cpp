@@ -6,6 +6,8 @@
 #include "Waiter.h"
 #include "Chef.h"
 
+#define RESTAURANT_TIMER 30 //defines how many seconds restaurant will work
+
 int getRandomNumber(int min, int max)
 {
     static std::mt19937 generator;
@@ -60,7 +62,7 @@ int main()
     std::thread waiter3(&WaiterWork::work, std::ref(waiterWork), "Waiter3");
     std::thread waiter4(&WaiterWork::work, std::ref(waiterWork), "Waiter4");
 
-    openRestaurant(restaurant, 30);
+    openRestaurant(restaurant, RESTAURANT_TIMER);
 
     chef1.join();
     chef2.join();
