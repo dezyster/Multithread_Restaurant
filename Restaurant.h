@@ -1,17 +1,18 @@
 #pragma once
 
-#include <iostream>
-#include <mutex>
-#include <shared_mutex>
 #include <condition_variable>
 #include <thread>
 #include <string>
+#include <list>
 
 #include "Timer.h"
+#include "BaseWorker.h"
 
 class Restaurant
 {
-public:
+    friend class ChefWork;
+    friend class WaiterWork;
+
     int ordersToCookCount = 0;
     int ordersToServeCount = 0;
     int newOrdersCount = 0;
@@ -30,6 +31,14 @@ public:
     std::mutex isRestaurantClosedMutex;
     std::mutex coutMutex;
 
+    std::list<std::thread> workers;
+
+    void addWorker(const char[], BaseWork&);
+
+    void waitUntilWorkEnds();
+
+public:
+
     Restaurant(): restaurantClock{}{}
 
     std::string getCurrentTime();
@@ -37,5 +46,9 @@ public:
     void addOrders(int);
     void addOrder();
 
+    int getTotalOrders(){ return totalOrders; }
+
     void closeRestaurant();
+
+    ~Restaurant() { waitUntilWorkEnds(); }
 };

@@ -1,12 +1,17 @@
+#include <iostream>
+
 #include "Chef.h"
 
 extern int getRandomNumber(int min, int max);
 
 bool ChefWork::isNeededToWork()
 {
-    if(!(checkIfRestaurantIsClosed()))
     {
-        return true;
+        std::lock_guard<std::mutex> isRestaurantClosedUniqueLock(m_rest.isRestaurantClosedMutex);
+        if(!(m_rest.isRestaurantClosed))
+        {
+            return true;
+        }
     }
 
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.coutMutex);

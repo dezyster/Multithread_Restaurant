@@ -1,8 +1,9 @@
 #pragma once
 
 #include "BaseWorker.h"
+#include "Restaurant.h"
 
-class ChefWork: public BaseWorker
+class ChefWork: public BaseWork
 {
     int cookedCountNum = 0;
 
@@ -14,8 +15,10 @@ class ChefWork: public BaseWorker
     void coock();
     void printFinishCoocking(const char[], int);
 
-public:
-    ChefWork(Restaurant &rest):BaseWorker(rest) {}
-
     virtual void work(const char[]) override;
+
+public:
+    ChefWork(Restaurant &rest):BaseWork(rest) {}
+
+    void addChefToRestaurant(const char chefName[]) { m_rest.addWorker(chefName, *this); }
 };

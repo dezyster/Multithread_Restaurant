@@ -1,12 +1,17 @@
+#include <iostream>
+
 #include "Waiter.h"
 
 extern int getRandomNumber(int min, int max);
 
 bool WaiterWork::isNeededToWork()
 {
-    if(!(checkIfRestaurantIsClosed()))
     {
-        return true;
+        std::lock_guard<std::mutex> isRestaurantClosedUniqueLock(m_rest.isRestaurantClosedMutex);
+        if(!(m_rest.isRestaurantClosed))
+        {
+            return true;
+        }
     }
 
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.coutMutex);
@@ -16,19 +21,19 @@ bool WaiterWork::isNeededToWork()
 
 void WaiterWork::goToWaitingLine(std::unique_lock<std::mutex> &newOrdersUniqueLock)
 {
-   m_rest.waiterWaitingLine.wait(newOrdersUniqueLock,
-    [this]()
-    {
+    m_rest.waiterWaitingLine.wait(newOrdersUniqueLock,
+        [this]()
         {
-            std::lock_guard<std::mutex> ordersToServeUniqueLock(m_rest.ordersToServeMutex);
-            if(m_rest.ordersToServeCount > 0)
             {
-                return true;
+                std::lock_guard<std::mutex> ordersToServeUniqueLock(m_rest.ordersToServeMutex);
+                if(m_rest.ordersToServeCount > 0)
+                {
+                    return true;
+                }
             }
-        }
-        std::lock_guard<std::mutex> isRestaurantClosedUniqueLock(m_rest.isRestaurantClosedMutex);
-        return m_rest.newOrdersCount > 0 || m_rest.isRestaurantClosed;
-    });
+            std::lock_guard<std::mutex> isRestaurantClosedUniqueLock(m_rest.isRestaurantClosedMutex);
+            return m_rest.newOrdersCount > 0 || m_rest.isRestaurantClosed;
+        });
 }
 
 int WaiterWork::printNewOrderAndGetOrderNum(const char waiterName[])

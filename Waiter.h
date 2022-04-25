@@ -1,8 +1,9 @@
 #pragma once
 
 #include "BaseWorker.h"
+#include "Restaurant.h"
 
-class WaiterWork: public BaseWorker
+class WaiterWork: public BaseWork
 {
     int tookedNewOrderNum = 0;
     int servedCountNum = 0;
@@ -17,8 +18,10 @@ class WaiterWork: public BaseWorker
     void printServed(const char[]);
     bool checkNewOrders(const char[]);
 
-public:
-    WaiterWork(Restaurant &rest):BaseWorker(rest) {}
-
     virtual void work(const char []) override;
+
+public:
+    WaiterWork(Restaurant &rest):BaseWork(rest) {}
+
+    void addWaiterToRestaurant(const char waiterName[]) { m_rest.addWorker(waiterName, *this); }
 };

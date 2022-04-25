@@ -2,6 +2,10 @@
 
 extern int getRandomNumber(int min, int max);
 
+void Restaurant::addWorker(const char workerName[], BaseWork &baseWork)
+{
+    workers.push_back( std::thread (&BaseWork::work, std::ref(baseWork), workerName) );
+}
 
 std::string Restaurant::getCurrentTime()
 {
@@ -28,6 +32,14 @@ void Restaurant::addOrder()
     waiterWaitingLine.notify_one();
 }
 
+void Restaurant::waitUntilWorkEnds()
+{
+    for(auto &it: workers)
+    {
+        it.join();
+    }
+}
+
 void Restaurant::closeRestaurant()
 {
     {
@@ -36,4 +48,7 @@ void Restaurant::closeRestaurant()
     }
     chefWaitingLine.notify_all();
     waiterWaitingLine.notify_all();
+
+    waitUntilWorkEnds();
+    workers.clear();
 }
