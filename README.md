@@ -1,11 +1,13 @@
 # Multithread_Restaurant
 This program is a simulation of restaurant with parallel-working waiters and chefs
 
-For the restaurant to work, you need to create a restaurant object, objects responsible for work in a restaurant and add workers through them. The program can work with a different amount of chefs and waiters, at least one waiter and one chef is required. Each worker is a separate thread and can work independently.
+For the restaurant to work, it needs two type of workers: chefs and waiters. The program can work with a different amount of chefs and waiters, at least one waiter and one chef is required. Each worker is a separate thread and can work independently.
+
+To simplify work with restaurant project contains special facade.
 
 A configurable random number of orders are added into the restaurant at random intervals. The task of workers is to process these orders.
 
-The waiters take new orders from customers and take them to the kitchen, after that they notify the chefs. Chefs coock an orders, and after that they notify the waiters about the coocked orders. After that, waiters can serve the orders to customer.
+The waiters take new orders from customers and take them to the kitchen, after that they notify the chefs. Chefs coock an orders, and after that they notify the waiters. After that, waiters can serve the orders to customer.
 
 For simulation purposes, each action takes some random amount of time.
 
