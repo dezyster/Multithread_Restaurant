@@ -45,7 +45,7 @@ int WaiterWork::printNewOrderAndGetOrderNum(const char waiterName[])
     return m_tookedNewOrderNum;
 }
 
-void WaiterWork::takeOrderToKitchen()
+void WaiterWork::putOrderToKitchen()
 {
     std::lock_guard<std::mutex> ordersToCookUniqueLock(m_rest.m_ordersToCookMutex);
     m_rest.m_ordersToCookCount++;
@@ -58,57 +58,75 @@ void WaiterWork::printTookedOrder(const char waiterName[], int newOrderNum)
     std::cout << currentTime << ": " << waiterName << " took order num. " << newOrderNum << " to kitchen!" << std::endl;
 }
 
-void WaiterWork::printServed(const char waiterName[])
+void WaiterWork::bringOrderToKitchen(const char waiterName[])
+{
+    int newOrderNum{ printNewOrderAndGetOrderNum(waiterName) };
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,2000)));
+
+    putOrderToKitchen();
+
+    printTookedOrder(waiterName, newOrderNum);
+
+    m_rest.m_chefWaitingLine.notify_one();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,2000)));
+}
+
+int WaiterWork::tookToServe(const char waiterName[])
+{
+    const auto &currentTime{ m_rest.getCurrentTime() };
+
+    std::lock_guard<std::mutex> coutUniqueLock(m_rest.m_coutAndOtherMutex);
+    std::cout << currentTime << ": " << waiterName << " took coocked order num. " << ++m_servedCountNum << "!" << std::endl;
+    return m_servedCountNum;
+}
+
+void WaiterWork::printServed(const char waiterName[], int servedCountNum)
 {
    const auto &currentTime{ m_rest.getCurrentTime() };
 
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.m_coutAndOtherMutex);
-    std::cout << currentTime << ": " << waiterName << " served an order num. " << ++m_servedCountNum << "!" << std::endl;
+    std::cout << currentTime << ": " << waiterName << " served an order num. " << servedCountNum << "!" << std::endl;
 }
 
-bool WaiterWork::checkNewOrders(const char waiterName[])
+void WaiterWork::chechOrdersToServe(const char waiterName[])
 {
-    std::unique_lock<std::mutex> newOrdersUniqueLock(m_rest.m_newOrdersMutex);
+    std::unique_lock<std::mutex> ordersToServeUniqueLock(m_rest.m_ordersToServeMutex);
+        if (m_rest.m_ordersToServeCount > 0)
+        {
+            m_rest.m_ordersToServeCount--;
+            ordersToServeUniqueLock.unlock();
 
-    goToWaitingLine(newOrdersUniqueLock);
+            std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(500,1500)));
 
-    if (m_rest.m_newOrdersCount > 0)
-    {
-        m_rest.m_newOrdersCount--;
-        newOrdersUniqueLock.unlock();
+            int servedCountNum { tookToServe(waiterName) };
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,2000)));
+            std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,4000)));
 
-        int newOrderNum{ printNewOrderAndGetOrderNum(waiterName) };
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,2000)));
-
-        takeOrderToKitchen();
-
-        printTookedOrder(waiterName, newOrderNum);
-
-        m_rest.m_chefWaitingLine.notify_one();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,2000)));
-    }
+            printServed(waiterName, servedCountNum);
+        }
 }
 
 void WaiterWork::work(const char waiterName[])
 {
     while (isNeededToWork())
     {
-        checkNewOrders(waiterName);
+        std::unique_lock<std::mutex> newOrdersUniqueLock(m_rest.m_newOrdersMutex);
 
-        std::unique_lock<std::mutex> ordersToServeUniqueLock(m_rest.m_ordersToServeMutex);
-        if (m_rest.m_ordersToServeCount > 0)
+        goToWaitingLine(newOrdersUniqueLock);
+
+        if (m_rest.m_newOrdersCount > 0)
         {
-            m_rest.m_ordersToServeCount--;
-            ordersToServeUniqueLock.unlock();
+            m_rest.m_newOrdersCount--;
+            newOrdersUniqueLock.unlock();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,5000)));
+            std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,2000)));
 
-            printServed(waiterName);
+            bringOrderToKitchen(waiterName);
         }
+
+        chechOrdersToServe(waiterName);
     }
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.m_coutAndOtherMutex);
     std::cout << waiterName << " goes to home!" << std::endl;

@@ -65,9 +65,11 @@ void ChefWork::work(const char chefName[])
             m_rest.m_ordersToCookCount--;
             ordersToCookUniqueLock.unlock();
 
+            std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(500,1500)));
+
             int cookingOrderNum{ printStartAndGetOrderNum(chefName) };
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,5000)));
+            std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(1000,4000)));
 
             coock();
 

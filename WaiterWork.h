@@ -12,10 +12,13 @@ class WaiterWork: public BaseWork
     virtual void goToWaitingLine(std::unique_lock<std::mutex>&) override;
 
     int printNewOrderAndGetOrderNum(const char[]);
-    void takeOrderToKitchen();
+    void putOrderToKitchen();
     void printTookedOrder(const char[], int);
-    void printServed(const char[]);
-    bool checkNewOrders(const char[]);
+    void bringOrderToKitchen(const char[]);
+
+    int tookToServe(const char[]);
+    void printServed(const char[], int);
+    void chechOrdersToServe(const char[]);
 
     virtual void work(const char []) override;
 
