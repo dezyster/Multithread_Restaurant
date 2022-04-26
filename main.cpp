@@ -1,63 +1,48 @@
-#include <conio.h>
-#include <random>
-#include <iostream>
-
-#include "Restaurant.h"
-#include "Waiter.h"
-#include "Chef.h"
-
-#define WORK_TIME 30 //defines how many seconds restaurant will work
-
-int getRandomNumber(int min, int max)
-{
-    static std::mt19937 generator;
-    std::uniform_int_distribution<int> distribution(min,max);
-    return distribution(generator);
-}
-
-void resetRandom()
-{
-    Timer randomTimer;
-
-    std::cout << "Press any key to start" << std::endl;
-    getch();
-
-    for(int i = 0; i < ( randomTimer.elapsed() * 10000); i++)
-    {
-        getRandomNumber(1,10);
-    }
-}
+#include "RestaurantFacade.h"
 
 int main()
 {
-    resetRandom();
+    RestaurantFacade restaurant;
 
-    Restaurant restaurant;
+    // setting up restaurant properties if needed
+    restaurant.setWorkTime(30); // as default
+    restaurant.setMaxOrdersAtOnce(3); // as default
+    restaurant.setMinOrderInterval(5); // as default
+    restaurant.setMaxOrderInterval(10); // as default
 
-    WaiterWork waiterWork(restaurant);
+    // ----------- first start -------------
 
-    waiterWork.addWaiterToRestaurant("Waiter1");
-    waiterWork.addWaiterToRestaurant("Waiter2");
-    waiterWork.addWaiterToRestaurant("Waiter3");
-    waiterWork.addWaiterToRestaurant("Waiter4");
+    restaurant.addWaiter("Waiter1");
+    restaurant.addWaiter("Waiter2");
+    restaurant.addWaiter("Waiter3");
+    restaurant.addWaiter("Waiter4");
 
-    ChefWork chefWork(restaurant);
+    restaurant.addChef("Chef1");
+    restaurant.addChef("Chef2");
 
-    chefWork.addChefToRestaurant("Chef1");
-    chefWork.addChefToRestaurant("Chef2");
+    restaurant.start();
+    // ----------- ------------ -------------
 
-    Timer workTimer;
+    // setting up new restaurant properties for second start
+    restaurant.setWorkTime(60);
+    restaurant.setMaxOrdersAtOnce(5);
+    restaurant.setMinOrderInterval(3);
+    restaurant.setMaxOrderInterval(12);
 
-    while(workTimer.elapsed() < WORK_TIME)
-    {
-        restaurant.addOrders(getRandomNumber(1, 3));
-        std::this_thread::sleep_for(std::chrono::seconds(getRandomNumber(5, 10)));
-    }
+    // ----------- second start -------------
+    restaurant.addWaiter("Waiter1");
+    restaurant.addWaiter("Waiter2");
+    restaurant.addWaiter("Waiter3");
+    restaurant.addWaiter("Waiter4");
+    restaurant.addWaiter("Waiter5");
+    restaurant.addWaiter("Waiter6");
 
-    restaurant.closeRestaurant();
+    restaurant.addChef("Chef1");
+    restaurant.addChef("Chef2");
+    restaurant.addChef("Chef3");
 
-    std::cout << "Restaurant processed " << restaurant.getTotalOrders() << " orders in "
-              << restaurant.getCurrentTime() << " seconds";
+    restaurant.start();
+     // ----------- second start -------------
 
     return 0;
 }

@@ -1,40 +1,34 @@
+#include <iostream>
+
 #include "Restaurant.h"
 
 extern int getRandomNumber(int min, int max);
 
 void Restaurant::addWorker(const char workerName[], BaseWork &baseWork)
 {
-    workers.push_back( std::thread (&BaseWork::work, std::ref(baseWork), workerName) );
+    m_workers.push_back( std::thread (&BaseWork::work, std::ref(baseWork), workerName) );
 }
 
 std::string Restaurant::getCurrentTime()
 {
-    return std::to_string(restaurantClock.elapsed());
+    return std::to_string(m_restaurantClock.elapsed());
 }
 
 void Restaurant::addOrders(int numb)
 {
-    std::unique_lock<std::mutex> newOrdersUniqueLock(newOrdersMutex);
-    newOrdersCount += numb;
-    totalOrders += numb;
+    std::unique_lock<std::mutex> newOrdersUniqueLock(m_newOrdersMutex);
+
+    m_newOrdersCount += numb;
+    m_totalOrders += numb;
+
     newOrdersUniqueLock.unlock();
 
-    waiterWaitingLine.notify_all();
-}
-
-void Restaurant::addOrder()
-{
-    std::unique_lock<std::mutex> newOrdersUniqueLock(newOrdersMutex);
-    newOrdersCount ++;
-    totalOrders++;
-    newOrdersUniqueLock.unlock();
-
-    waiterWaitingLine.notify_one();
+    m_waiterWaitingLine.notify_all();
 }
 
 void Restaurant::waitUntilWorkEnds()
 {
-    for(auto &it: workers)
+    for(auto &it: m_workers)
     {
         it.join();
     }
@@ -42,13 +36,19 @@ void Restaurant::waitUntilWorkEnds()
 
 void Restaurant::closeRestaurant()
 {
-    {
-        std::lock_guard<std::mutex> isRestaurantClosedUniqueLock(isRestaurantClosedMutex);
-        isRestaurantClosed = true;
-    }
-    chefWaitingLine.notify_all();
-    waiterWaitingLine.notify_all();
+    std::unique_lock<std::mutex> isRestaurantClosedUniqueLock(m_isRestaurantClosedMutex);
+
+    m_isRestaurantClosed = true;
+
+    isRestaurantClosedUniqueLock.unlock();
+
+    m_chefWaitingLine.notify_all();
+    m_waiterWaitingLine.notify_all();
 
     waitUntilWorkEnds();
-    workers.clear();
+
+    std::cout << "Restaurant processed " << m_totalOrders << " orders in " << getCurrentTime() << " seconds" << std::endl;
+
+    m_workers.clear();
+    m_totalOrders = 0;
 }

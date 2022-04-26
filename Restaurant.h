@@ -6,48 +6,50 @@
 #include <list>
 
 #include "Timer.h"
-#include "BaseWorker.h"
+#include "BaseWork.h"
 
 class Restaurant
 {
     friend class ChefWork;
     friend class WaiterWork;
 
-    int ordersToCookCount = 0;
-    int ordersToServeCount = 0;
-    int newOrdersCount = 0;
-    bool isRestaurantClosed = false;
+    int m_ordersToCookCount = 0;
+    int m_ordersToServeCount = 0;
+    int m_newOrdersCount = 0;
+    bool m_isRestaurantClosed = false;
 
-    int totalOrders = 0;
+    int m_totalOrders = 0;
 
-    Timer restaurantClock;
+    Timer m_restaurantClock;
 
-    std::condition_variable waiterWaitingLine;
-    std::condition_variable chefWaitingLine;
+    std::condition_variable m_waiterWaitingLine;
+    std::condition_variable m_chefWaitingLine;
 
-    std::mutex ordersToServeMutex;
-    std::mutex ordersToCookMutex;
-    std::mutex newOrdersMutex;
-    std::mutex isRestaurantClosedMutex;
-    std::mutex coutMutex;
+    std::mutex m_ordersToServeMutex;
+    std::mutex m_ordersToCookMutex;
+    std::mutex m_newOrdersMutex;
+    std::mutex m_isRestaurantClosedMutex;
+    std::mutex m_coutAndOtherMutex;
 
-    std::list<std::thread> workers;
-
-    void addWorker(const char[], BaseWork&);
+    std::list<std::thread> m_workers;
 
     void waitUntilWorkEnds();
 
 public:
 
-    Restaurant(): restaurantClock{}{}
+    Restaurant(): m_restaurantClock{}{}
+
+    void addWorker(const char[], BaseWork&);
 
     std::string getCurrentTime();
 
     void addOrders(int);
     void addOrder();
 
-    int getTotalOrders(){ return totalOrders; }
+    void resetTimer() { m_restaurantClock.reset(); }
+    bool isRestaurantClosed() { return m_isRestaurantClosed; }
 
+    void openRestaurant() { m_isRestaurantClosed = false; }
     void closeRestaurant();
 
     ~Restaurant() { waitUntilWorkEnds(); }
