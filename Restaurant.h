@@ -52,5 +52,5 @@ public:
     void openRestaurant() { m_isRestaurantClosed = false; }
     void closeRestaurant();
 
-    ~Restaurant() { waitUntilWorkEnds(); }
+    ~Restaurant();
 };

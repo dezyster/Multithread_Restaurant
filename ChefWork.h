@@ -17,7 +17,7 @@ class ChefWork: public BaseWork
     virtual void work(const char[]) override;
 
 public:
-    ChefWork(Restaurant &rest):BaseWork(rest) {}
+    ChefWork(Restaurant &rest): BaseWork(rest){}
 
     virtual void reset() override;
 };

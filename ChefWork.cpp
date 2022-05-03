@@ -7,10 +7,12 @@ extern int getRandomNumber(int min, int max);
 bool ChefWork::isNeededToWork() const
 {
     std::unique_lock<std::mutex> isRestaurantClosedUniqueLock(m_rest.m_isRestaurantClosedMutex);
+
     if(!(m_rest.m_isRestaurantClosed))
     {
         return true;
     }
+
     isRestaurantClosedUniqueLock.unlock();
 
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.m_coutAndOtherMutex);
@@ -24,6 +26,7 @@ void ChefWork::goToWaitingLine(std::unique_lock<std::mutex> &ordersToCookUniqueL
         [this]()
         {
             std::lock_guard<std::mutex> isRestaurantClosedUniqueLock(m_rest.m_isRestaurantClosedMutex);
+
             return m_rest.m_ordersToCookCount > 0 || m_rest.m_isRestaurantClosed;
         });
 }
@@ -33,6 +36,7 @@ int ChefWork::printStartAndGetOrderNum(const char chefName[])
     const auto &currentTime = m_rest.getCurrentTime();
 
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.m_coutAndOtherMutex);
+
     std::cout << currentTime << ": " << chefName << " started cooking order num. " << ++m_cookedCountNum << "!" << std::endl;
 
     return m_cookedCountNum;
@@ -41,6 +45,7 @@ int ChefWork::printStartAndGetOrderNum(const char chefName[])
 void ChefWork::coock()
 {
     std::lock_guard<std::mutex> ordersToServeUniqueLock(m_rest.m_ordersToServeMutex);
+
     m_rest.m_ordersToServeCount++;
 }
 
@@ -49,6 +54,7 @@ void ChefWork::printFinishCoocking(const char chefName[], int cookingOrderNum)
     const auto &currentTime = m_rest.getCurrentTime();
 
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.m_coutAndOtherMutex);
+
     std::cout << currentTime << ": " << chefName << " cooked an order num. " << cookingOrderNum << "!" << std::endl;
 }
 
@@ -63,6 +69,7 @@ void ChefWork::work(const char chefName[])
         if (m_rest.m_ordersToCookCount > 0)
         {
             m_rest.m_ordersToCookCount--;
+
             ordersToCookUniqueLock.unlock();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(getRandomNumber(500,1500)));
@@ -81,11 +88,13 @@ void ChefWork::work(const char chefName[])
         }
     }
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.m_coutAndOtherMutex);
+
     std::cout << chefName << " goes to home!" << std::endl;
 }
 
 void ChefWork::reset()
 {
     std::lock_guard<std::mutex> coutUniqueLock(m_rest.m_coutAndOtherMutex);
+
     m_cookedCountNum = 0;
 }

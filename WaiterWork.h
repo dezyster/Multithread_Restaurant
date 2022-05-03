@@ -23,7 +23,7 @@ class WaiterWork: public BaseWork
     virtual void work(const char []) override;
 
 public:
-    WaiterWork(Restaurant &rest):BaseWork(rest) {}
+    WaiterWork(Restaurant &rest): BaseWork(rest){}
 
     virtual void reset() override;
 };

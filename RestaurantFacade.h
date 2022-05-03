@@ -19,8 +19,8 @@ class RestaurantFacade
     bool m_wasChefsAdded = false;
 
 public:
-    RestaurantFacade(): m_restaurant{ },
-        m_waiterWork{ m_restaurant }, m_chefWork{ m_restaurant }{}
+    RestaurantFacade()
+        : m_restaurant{}, m_waiterWork{ m_restaurant }, m_chefWork{ m_restaurant }{}
 
     void addWaiter(const char[]);
     void addChef(const char[]);

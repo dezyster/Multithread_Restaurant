@@ -52,3 +52,17 @@ void Restaurant::closeRestaurant()
     m_workers.clear();
     m_totalOrders = 0;
 }
+
+Restaurant::~Restaurant()
+{
+    std::unique_lock<std::mutex> isRestaurantClosedUniqueLock(m_isRestaurantClosedMutex);
+
+    m_isRestaurantClosed = true;
+
+    isRestaurantClosedUniqueLock.unlock();
+
+    m_chefWaitingLine.notify_all();
+    m_waiterWaitingLine.notify_all();
+
+    waitUntilWorkEnds();
+}
