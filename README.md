@@ -12,3 +12,5 @@ The waiters take new orders from customers and take them to the kitchen, after t
 For simulation purposes, each action takes some random amount of time.
 
 When the time comes for the restaurant to close, the chefs coock all the remaining orders and go home. The waiters, in turn, wait until all the orders have been served to the customers, and only after that they go home together.
+
+main.cpp file contains examples on how to work with restaurant.
